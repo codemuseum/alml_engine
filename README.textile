@@ -5,6 +5,47 @@ h1. AlmlEngine
 h2. Usage
 
 
+h3. Currently Acceptable commands
+
+<pre>
+  ! - Single Line Comment
+  # - Div with id
+  . - Div with class name
+  @ - Dynamic content to be rendered by block (sends following command as block parameter)
+</pre>
+
+h2. Example ALML file
+
+<pre>
+! Start Header
+#header
+  .ring
+    .outer
+      .inside
+        .lining
+          @header-and-logo
+
+! Start Nav
+#navigation
+  .container
+    .inside	
+      @navigation
+
+! Start Content
+#content
+  .inside
+    #liquid
+      .lining
+        @:auto
+
+! Start Footer
+#footer
+  .outside
+    .inside
+       @footer-navigation
+       @footer-logo
+</pre>
+
 
 h2. Installation
 
