@@ -1,6 +1,6 @@
 # Usage: 
 #  alml = Alml::Engine.new template_text
-#  alml.render { |dynamic_script_name| "I return the rendered content of #{dynamic_script_name}" }  
+#  alml.render { |dynamic_script_name| "I return the rendered content of #{dynamic_script_name}<br/>\n" }  
 module Alml
   class Engine
 
@@ -10,10 +10,9 @@ module Alml
       @lines = []
       prev_l = nil
       lines_text.each_with_index do |line_text, index|
-        l = Line.new line_text, index
-        
+        l = Line.new line_text, index, prev_l
         next if l.empty?
-        break if !l.valid_compared_to_previous?(prev_l)
+
         @lines << l
         prev_l = l
       end
@@ -28,6 +27,8 @@ module Alml
         buffer << line.render(prev_l, &block)
         prev_l = line
       end
+      buffer << Line.render_remaining_closures(prev_l)
+      
       buffer
     end
 
@@ -51,10 +52,23 @@ module Alml
       attr_reader :full, :command, :line_number, :open_output
 
 
-      def initialize(line_text, line_number)
+      def self.render_remaining_closures(previous_line)
+        buffer = ''
+        previous_line.tabs.times { buffer << close_div }
+        buffer
+      end
+
+      def initialize(line_text, line_number, previous_line)
         @full = line_text
         @line_number = line_number
         @command = line_text.strip
+        
+        return if empty? # Quit while we're ahead
+        
+        if !valid_compared_to_previous?(previous_line)
+          raise SyntaxError.new("Line #{line_number}: The line was indented #{tab_distance_from(previous_line)} levels deeper than the previous line.")
+        end
+        
         # Up-front all the burden, except for dynamic content
         prerender_static_content
       end
@@ -72,23 +86,19 @@ module Alml
       # end
 
 
-      def valid_compared_to_previous?(previous_line)
-        if tab_distance_from(previous_line) > 1
-          raise SyntaxError.new("The line was indented #{tabs - previous_line.tabs} levels deeper than the previous line.", line_number)
-        end
-        true
-      end
-
       # Optinal block incase it's dynamic
       # The fact that there is only 1 self-closing tag makes it VERY easy to work with.  
       # Any differences in tab distance can be attributed to a close div tag, and no other kinds of tags.
       def render(previous_line, &block)
+        return '' if empty? # Quit while we're ahead
+
         buffer = ''
         tab_distance = tab_distance_from(previous_line)
 
         if tab_distance < 0
           (tab_distance * -1).times { buffer << render_close_div }
         end
+
         if dynamic?
           buffer << render_script(command, &block)
         else
@@ -96,13 +106,23 @@ module Alml
         end
         buffer
       end
-
-      private
-
+      
       def tabs
         return @tabs unless @tabs.nil?
-        @tabs = empty? ? 0 : @full[/^\s*/].length / SPACES_PER_TAB
+        @tabs = empty? ? 0 : @full[/^ */].length / SPACES_PER_TAB
       end
+
+      protected
+
+
+      def valid_compared_to_previous?(previous_line)
+        return false if tab_distance_from(previous_line) > 1
+        true
+      end
+      
+      
+      private
+
 
       def tab_distance_from(another_line)
         tabs - (another_line.nil? ? 0 : another_line.tabs)
@@ -113,24 +133,28 @@ module Alml
         when DIV_CLASS, DIV_ID; render_div(command)
         when COMMENT; render_comment(command)
         when SCRIPT; # Dynamic commands here (do nothing). 
-        else; raise SyntaxError.new("Unknown ALML command `#{command[0]}'.", line_number)
+        else; raise SyntaxError.new("Line #{line_number}: Unknown ALML command `#{command[0]}'.")
         end
       end
 
       def render_div(markup)
         render_open_div(markup)
-        render_close_div(markup)
+        render_close_div
       end
 
       def render_open_div(markup)
-        id = nil
-        markup.gsub!(/\#[^\.]*/) { |match| id = match[1..-1]; '' }
-        class_names = markup.split('.').reject { |cn| cn.empty? }.join(' ')
+        id = ''
+        only_classes = markup.gsub(/\#[^\.]*/) { |match| id = match[1..-1]; '' }
+        class_names = only_classes.split('.').reject { |cn| cn.empty? }.join(' ')
         @open_output = "<div" + (id.empty? ? '' : " id=\"#{id}\"") + (class_names.empty? ? '' : " class=\"#{class_names}\"") + ">"
       end
 
       def render_close_div
-        @close_output = "</div>"
+        @close_output = self.class.close_div
+      end
+      
+      def self.close_div
+        "</div>"
       end
 
       def render_comment(markup)
