@@ -1,0 +1,41 @@
+h1. AlmlEngine
+
+(Still being actively developed)
+
+h2. Usage
+
+
+
+h2. Installation
+
+To enable the library your Rails 2.1 (or greater) project, use the gem configuration method in "<code>config/environment.rb</code>"
+
+<pre>
+Rails::Initializer.run do |config|
+  config.gem 'thrivesmart-alml_engine', :lib => 'alml_engine', :source => 'http://gems.github.com'
+end
+</pre>
+
+The <code>:lib</code> is important, because rails gets confused when the name of the gem is different from the library.
+
+And of course, run 
+
+<pre>
+  rake gems:install
+</pre>
+
+To get them installed on your system.
+
+Optionally, to unpack it into your application, just run:
+
+<pre>
+  rake gems:unpack GEM=thrivesmart-alml_engine
+</pre>
+
+
+h2. How it works
+
+
+h2. Copyright & License
+
+Copyright (c) 2008 ThriveSmart, LLC, released under the MIT license
