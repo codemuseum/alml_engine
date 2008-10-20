@@ -18,7 +18,7 @@ h2. Example ALML file
 
 <pre>
 ! Start Header
-#header
+#header.foo.bar
   .ring
     .outer
       .inside

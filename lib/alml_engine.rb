@@ -1,5 +1,7 @@
 # Usage: 
 #  alml = Alml::Engine.new template_text
+#  script_order = alml.scripts
+#  # Optional preprocessing using script_order elements
 #  alml.render { |dynamic_script_name| "I return the rendered content of #{dynamic_script_name}<br/>\n" }  
 module Alml
   class Engine
@@ -16,6 +18,12 @@ module Alml
         @lines << l
         prev_l = l
       end
+    end
+
+    # Returns an array of the scripts that will be called during render.
+    # Can be called for preprocessing purposes.
+    def scripts
+      @lines.reject { |l| !l.script? }.collect { |l| l.parameter }
     end
 
     # Block is called, sending in scripts (name of script or a script keyword, like :all)
@@ -77,14 +85,9 @@ module Alml
         @command.nil? || @command.empty?
       end
 
-      def dynamic?
+      def script?
         command[0] == SCRIPT
       end
-
-      # def self_closing?
-      #   command[0] == SCRIPT || command[0] == COMMENT
-      # end
-
 
       # Optinal block incase it's dynamic
       # The fact that there is only 1 self-closing tag makes it VERY easy to work with.  
@@ -99,7 +102,7 @@ module Alml
           (tab_distance * -1).times { buffer << render_close_div }
         end
 
-        if dynamic?
+        if script?
           buffer << render_script(command, &block)
         else
           buffer << @open_output
@@ -112,8 +115,11 @@ module Alml
         @tabs = empty? ? 0 : @full[/^ */].length / SPACES_PER_TAB
       end
 
-      protected
+      def parameter
+        command[1..-1]
+      end
 
+      protected
 
       def valid_compared_to_previous?(previous_line)
         return false if tab_distance_from(previous_line) > 1
@@ -122,7 +128,6 @@ module Alml
       
       
       private
-
 
       def tab_distance_from(another_line)
         tabs - (another_line.nil? ? 0 : another_line.tabs)
