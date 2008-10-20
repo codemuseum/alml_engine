@@ -31,8 +31,9 @@ module Alml
       buffer = ''
 
       prev_l = nil
+      script_index = [0] # So we can pass by reference
       @lines.each do |line|
-        buffer << line.render(prev_l, &block)
+        buffer << line.render(prev_l, script_index, &block)
         prev_l = line
       end
       buffer << Line.render_remaining_closures(prev_l)
@@ -92,7 +93,7 @@ module Alml
       # Optinal block incase it's dynamic
       # The fact that there is only 1 self-closing tag makes it VERY easy to work with.  
       # Any differences in tab distance can be attributed to a close div tag, and no other kinds of tags.
-      def render(previous_line, &block)
+      def render(previous_line, script_index, &block)
         return '' if empty? # Quit while we're ahead
 
         buffer = ''
@@ -103,7 +104,8 @@ module Alml
         end
 
         if script?
-          buffer << render_script(command, &block)
+          buffer << render_script(command, script_index[0], &block)
+          script_index[0] += 1
         else
           buffer << @open_output
         end
@@ -166,8 +168,8 @@ module Alml
         @open_output = "<!-- " + markup[1..-1] + " -->"
       end
 
-      def render_script(markup, &block)
-        block.call(markup[1..-1])
+      def render_script(markup, script_index, &block)
+        block.call(markup[1..-1], script_index)
       end
     end
 

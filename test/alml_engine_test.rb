@@ -35,10 +35,10 @@ class AlmlEngineTest < Test::Unit::TestCase
 
 END_OF_STRING
     
-    correct_result = "<!--  Start Header --><div id=\"header\" class=\"foo bar\"><div class=\"ring\"><div class=\"outer\"><div class=\"inside\"><div class=\"lining\">I return the rendered content of header-and-logo<br/>\n</div></div></div></div></div><!--  Start Nav --><div id=\"navigation\"><div class=\"container\"><div class=\"inside\">I return the rendered content of navigation<br/>\n</div></div></div><!--  Start Content --><div id=\"content\"><div class=\"inside\"><div id=\"liquid\"><div class=\"lining\">I return the rendered content of :auto<br/>\n</div></div></div></div><!--  Start Footer --><div id=\"footer\"><div class=\"outside\"><div class=\"inside\">I return the rendered content of footer-navigation<br/>\nI return the rendered content of footer-logo<br/>\n</div></div></div>"
+    correct_result = "<!--  Start Header --><div id=\"header\" class=\"foo bar\"><div class=\"ring\"><div class=\"outer\"><div class=\"inside\"><div class=\"lining\">I return the rendered content of header-and-logo at 0<br/>\n</div></div></div></div></div><!--  Start Nav --><div id=\"navigation\"><div class=\"container\"><div class=\"inside\">I return the rendered content of navigation at 1<br/>\n</div></div></div><!--  Start Content --><div id=\"content\"><div class=\"inside\"><div id=\"liquid\"><div class=\"lining\">I return the rendered content of :auto at 2<br/>\n</div></div></div></div><!--  Start Footer --><div id=\"footer\"><div class=\"outside\"><div class=\"inside\">I return the rendered content of footer-navigation at 3<br/>\nI return the rendered content of footer-logo at 4<br/>\n</div></div></div>"
     
     alml = Alml::Engine.new str
-    rendered_result = alml.render { |dynamic_script_name| "I return the rendered content of #{dynamic_script_name}<br/>\n" } 
+    rendered_result = alml.render { |dynamic_script_name, script_index| "I return the rendered content of #{dynamic_script_name} at #{script_index}<br/>\n" } 
     
     assert_equal rendered_result, correct_result
   end

@@ -14,3 +14,4 @@ config/locomotive.yml
 config/database.yml
 config/mail_servers.yml
 index/**/*
+*.gem
