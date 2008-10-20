@@ -4,6 +4,12 @@ h1. AlmlEngine
 
 h2. Usage
 
+<pre>
+  alml = Alml::Engine.new template_text
+  script_order = alml.scripts
+  # Optional preprocessing using script_order elements here
+  alml.render { |script_name| "I return the rendered content of #{script_name}<br/>\n" }
+</pre>
 
 h3. Currently Acceptable commands
 

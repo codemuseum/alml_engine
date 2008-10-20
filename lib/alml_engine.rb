@@ -2,7 +2,7 @@
 #  alml = Alml::Engine.new template_text
 #  script_order = alml.scripts
 #  # Optional preprocessing using script_order elements
-#  alml.render { |dynamic_script_name| "I return the rendered content of #{dynamic_script_name}<br/>\n" }  
+#  alml.render { |dynamic_script_name| "I return the rendered content of #{dynamic_script_name}<br/>\n" }
 module Alml
   class Engine
 
