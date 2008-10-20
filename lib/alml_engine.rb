@@ -47,7 +47,7 @@ module Alml
           # Essentially, delete_first_if (&block)
           found_at = nil
           objs.each_with_index { |obj, i| found_at = i if block.call(obj, script_param) }
-          script_map_array[script_index] = objs.delete_at(found_at) if found_at
+          script_map_array[script_index] = found_at.nil? ? [] : [objs.delete_at(found_at)]
         end
       end
       
