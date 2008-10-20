@@ -20,6 +20,47 @@ module Alml
       end
     end
 
+    # Helps to order the scripts, sending in a block to evaluate equality
+    # Returns an array, indexed by script_index, with all the objects in them 
+    # that should be mapped, according to the layout (including :auto script keyword)
+    def script_map(objects_to_map_array, &block)
+      objs = objects_to_map_array.dup
+      ss = scripts
+      script_map_array = Array.new(ss.length + 1)
+      auto_fill_index = -1
+      last_auto_index = -1 # Filled with anything remaining
+      
+      ss.each_with_index do |script_param, script_index|
+        if script_param == ':auto'
+          script_map_array[script_index] = Array.new
+          last_auto_index = auto_fill_index = script_index
+        elsif auto_fill_index != -1
+          while auto_fill_index != -1 && obj = objs.shift
+            if block.call(obj, script_param) # Next item matches
+              script_map_array[script_index] = [obj]
+              auto_fill_index = -1
+            else
+              script_map_array[auto_fill_index] << obj
+            end
+          end
+        else
+          # Essentially, delete_first_if (&block)
+          found_at = nil
+          objs.each_with_index { |obj, i| found_at = i if block.call(obj, script_param) }
+          script_map_array[script_index] = objs.delete_at(found_at) if found_at
+        end
+      end
+      
+      # Remaining, fill in auto; otherwise, just put it all the way at the end
+      if last_auto_index != -1
+        script_map_array[last_auto_index].concat(objs)
+      else
+        script_map_array << objs
+      end
+      
+      script_map_array
+    end
+
     # Returns an array of the scripts that will be called during render.
     # Can be called for preprocessing purposes.
     def scripts
@@ -95,12 +136,13 @@ module Alml
       # Any differences in tab distance can be attributed to a close div tag, and no other kinds of tags.
       def render(previous_line, script_index, &block)
         return '' if empty? # Quit while we're ahead
-
         buffer = ''
-        tab_distance = tab_distance_from(previous_line)
 
+        tab_distance = tab_distance_from(previous_line)
         if tab_distance < 0
           (tab_distance * -1).times { buffer << render_close_div }
+        elsif tab_distance == 0 && !previous_line.nil? && previous_line.requires_closing?
+          buffer << render_close_div # same level divs
         end
 
         if script?
@@ -128,6 +170,9 @@ module Alml
         true
       end
       
+      def requires_closing?
+        command[0] == DIV_CLASS || command[0] == DIV_ID
+      end
       
       private
 

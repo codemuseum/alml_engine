@@ -4,11 +4,22 @@ h1. AlmlEngine
 
 h2. Usage
 
+Simple Example:
+
 <pre>
   alml = Alml::Engine.new template_text
-  script_order = alml.scripts
-  # Optional preprocessing using script_order elements here
   alml.render { |script_name, script_index| "I return the rendered content of #{script_name}<br/>\n" }
+</pre>
+
+Advanced Example, handling the :auto script keyword:
+
+<pre>
+  alml = Alml::Engine.new template_text
+  script_order_map = alml.script_map(unordered_app_array) { |app, script_name| app.name == script_param }
+  
+  alml.render do |script_name, script_index|
+    script_order_map[script_index].collect { |app| "I return the rendered content of #{app.name}<br/>\n" }.join('\n')
+  end
 </pre>
 
 h3. Currently Acceptable commands
