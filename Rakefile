@@ -7,7 +7,7 @@ require 'date'
  
 GEM = "alml_engine"
 HUMANIZED_GEM = "AlmlEngine"
-GEM_VERSION = "0.0.5"
+GEM_VERSION = "0.0.6"
 AUTHOR = "ThriveSmart, LLC"
 EMAIL = "developers@thrivesmart.com"
 HOMEPAGE = "http://www.github.com/thrivesmart/alml_engine"

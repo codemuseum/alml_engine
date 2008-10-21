@@ -70,4 +70,16 @@ END_OF_STRING
     assert_equal correct_result, rendered_result
   end
   
+  def test_scripts_map_no_matches
+    
+    alml = Alml::Engine.new TEST_STR
+    unordered_app_array = ['no-matching-app1', 'no-matching-app2', 'no-matching-app3']
+    script_order_map = alml.script_map(unordered_app_array) { |app, script_name| false }
+    
+    STDERR.print("Script order map: #{script_order_map.inspect}\n")
+    
+    correct_result = [[], [], ["no-matching-app1", "no-matching-app2", "no-matching-app3"], [], [], []]
+    assert_equal correct_result, script_order_map
+  end
+  
 end

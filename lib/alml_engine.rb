@@ -30,6 +30,7 @@ module Alml
       auto_fill_index = -1
       last_auto_index = -1 # Filled with anything remaining
       
+        
       ss.each_with_index do |script_param, script_index|
         if script_param == ':auto'
           script_map_array[script_index] = Array.new
@@ -43,6 +44,11 @@ module Alml
               script_map_array[auto_fill_index] << obj
             end
           end
+          # if we've come out of here because objs.shift is empty and there was no match, then we shouldn't come back into this loop
+          if auto_fill_index != -1 
+            script_map_array[script_index] = []
+            auto_fill_index = -1
+          end
         else
           # Essentially, delete_first_if (&block)
           found_at = nil
@@ -54,8 +60,9 @@ module Alml
       # Remaining, fill in auto; otherwise, just put it all the way at the end
       if last_auto_index != -1
         script_map_array[last_auto_index].concat(objs)
+        script_map_array[script_map_array.size - 1] = []
       else
-        script_map_array << objs
+        script_map_array[script_map_array.size - 1] = [].concat(objs)
       end
       
       script_map_array
